@@ -19,12 +19,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Lowercase repo name (fix GHCR error)
+        run: |
+          echo "REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Build & Push Docker
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}/laravel:latest
+          tags: ghcr.io/${{ github.repository_owner }}/${{ env.REPO_LOWER }}/laravel:latest
 
       - name: Success!
-        run: echo "Image berhasil di-upload ke ghcr.io/${{ github.repository }}/laravel:latest"
+        run: |
+          echo "BERHASIL!"
+          echo "Image kamu sudah live di:"
+          echo "ghcr.io/${{ github.repository_owner }}/${{ env.REPO_LOWER }}/laravel:latest"
