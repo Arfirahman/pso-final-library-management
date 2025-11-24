@@ -13,6 +13,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: latest
+
+      - name: Lowercase repo name (fix GHCR strict lowercase)
+        id: lowercase
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const repo = process.env.GITHUB_REPOSITORY.toLowerCase();
+            return `ghcr.io/${repo}/laravel:latest`;
+
       - name: Login ke GHCR
         uses: docker/login-action@v3
         with:
@@ -25,11 +40,9 @@ jobs:
         with:
           context: .
           push: true
-          # Sekarang langsung pakai github.repository karena repo sudah lowercase!
-          tags: ghcr.io/${{ github.repository }}/laravel:latest
+          tags: ${{ steps.lowercase.outputs.result }}  # Pakai lowercase dari JS
 
       - name: Success!
         run: |
           echo "YEAY! Docker image berhasil di-upload!"
-          echo "Link image:"
-          echo "ghcr.io/${{ github.repository }}/laravel:latest"
+          echo "Link image: ${{ steps.lowercase.outputs.result }}"
