@@ -8,6 +8,7 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,19 +20,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Buat nama repo jadi lowercase (fix GHCR)
-        run: |
-          echo "REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-
       - name: Build & Push Docker Image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/${{ env.REPO_LOWER }}/laravel:latest
+          # Sekarang langsung pakai github.repository karena repo sudah lowercase!
+          tags: ghcr.io/${{ github.repository }}/laravel:latest
 
-      - name: Success
+      - name: Success!
         run: |
-          echo "SELESAI!"
-          echo "Image kamu sudah sukses di-upload ke:"
-          echo "ghcr.io/${{ github.repository_owner }}/${{ env.REPO_LOWER }}/laravel:latest"
+          echo "YEAY! Docker image berhasil di-upload!"
+          echo "Link image:"
+          echo "ghcr.io/${{ github.repository }}/laravel:latest"
