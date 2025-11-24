@@ -43,7 +43,7 @@ COPY --from=build /var/www /var/www/html
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Ganti config Apache biar ngarah ke /public
-COPY .docker/apache.conf /etc/apache2/sites-available/000-default.conf
+COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
 EXPOSE 80
 
