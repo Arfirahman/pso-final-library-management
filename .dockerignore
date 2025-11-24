@@ -9,3 +9,4 @@ vendor
 public/storage
 public/build
 .docker
+.docker/
