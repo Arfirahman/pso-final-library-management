@@ -1,33 +1,40 @@
 name: Build & Push Docker Image
 
+# Trigger tiap push ke branch main
 on:
   push:
     branches:
       - main
 
+# Tambahan ini yang penting → biar GITHUB_TOKEN boleh push ke GHCR tanpa warning
+permissions:
+  contents: read          # biar bisa checkout code
+  packages: write         # biar boleh push image ke GitHub Container Registry
+
 jobs:
   docker:
     runs-on: ubuntu-latest
-
     steps:
+      # 1. Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. Extract metadata (tag, label, dll)
       - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}
-          tags: latest
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Lowercase repo name (fix GHCR strict lowercase)
+      # 3. Lowercase repo name (GHCR butuh lowercase semua)
+      - name: Lowercase repo name
         id: lowercase
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const repo = process.env.GITHUB_REPOSITORY.toLowerCase();
-            return `ghcr.io/${repo}/laravel:latest`;
+        run: |
+          echo "image=ghcr.io/${{ github.repository }}/laravel:latest" | tr '[:upper:]' '[:lower:]' >> $GITHUB_OUTPUT
 
+      # 4. Login ke GitHub Container Registry
       - name: Login ke GHCR
         uses: docker/login-action@v3
         with:
@@ -35,14 +42,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # 5. Build & Push Docker Image
       - name: Build & Push Docker Image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ${{ steps.lowercase.outputs.result }}  # Pakai lowercase dari JS
+          tags: ${{ steps.lowercase.outputs.image }}
+          labels: ${{ steps.meta.outputs.labels }}
 
+      # 6. Success message
       - name: Success!
         run: |
-          echo "YEAY! Docker image berhasil di-upload!"
-          echo "Link image: ${{ steps.lowercase.outputs.result }}"
+          echo "YEAY! Docker image berhasil di-upload! "
+          echo "Link image: ${{ steps.lowercase.outputs.image }}"
