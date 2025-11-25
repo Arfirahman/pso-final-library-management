@@ -1,15 +1,15 @@
 name: Build & Push Docker Image
 
-# Trigger tiap push ke branch main
+
 on:
   push:
     branches:
       - main
 
-# Tambahan ini yang penting → biar GITHUB_TOKEN boleh push ke GHCR tanpa warning
+
 permissions:
-  contents: read          # biar bisa checkout code
-  packages: write         # biar boleh push image ke GitHub Container Registry
+  contents: read          
+  packages: write         
 
 jobs:
   docker:
@@ -54,5 +54,5 @@ jobs:
       # 6. Success message
       - name: Success!
         run: |
-          echo "YEAY! Docker image berhasil di-upload! "
+          echo "YEAY! The Docker image has been successfully uploaded! "
           echo "Link image: ${{ steps.lowercase.outputs.image }}"
