@@ -212,4 +212,6 @@ return [
         // 'ExampleClass' => App\Example\ExampleClass::class,
     ])->toArray(),
 
+# CI/CD + Terraform udah full hijau tanggal 2 Desember 2025
+
 ];
