@@ -41,10 +41,9 @@ jobs:
       - name: Generate app key
         run: php artisan key:generate
 
-      # INI YANG DIUBAH
-      - name: Install NPM dependencies & Build assets
+      - name: Install NPM & Build assets
         run: |
-          npm install          # ← dari npm ci jadi npm install
+          npm install
           npm run build
 
       - name: Run Tests
@@ -55,10 +54,10 @@ jobs:
           DB_DATABASE: laravel_test
           DB_USERNAME: laravel
           DB_PASSWORD: laravel
-        run: php artisan test 
+        run: php artisan test     # ← PASTI tanpa --coverage
 
-      - name: Laravel Pint (optional)
+      - name: Laravel Pint
         run: ./vendor/bin/pint --test || true
 
-      - name: PHPStan (optional)
+      - name: PHPStan
         run: ./vendor/bin/phpstan analyse --no-progress || true
