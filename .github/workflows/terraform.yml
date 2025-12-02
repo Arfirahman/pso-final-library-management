@@ -13,33 +13,34 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      # ← INI CARA MANUAL: Langsung export AWS credentials dari secrets
-      - name: Configure AWS Credentials Manually
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ap-southeast-1
+      # ← CARA PALING PASTI: Tulis credentials ke ~/.aws/credentials
+      - name: Configure AWS Credentials (File Method)
         run: |
-          echo "AWS configured manually"
-          aws sts get-caller-identity  # Test koneksi (kalau hijau, berarti sukses)
+          mkdir -p ~/.aws
+          cat > ~/.aws/credentials << EOF
+          [default]
+          aws_access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key = ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          EOF
+          echo "AWS credentials written to ~/.aws/credentials"
 
+      # Test koneksi
+      - name: Test AWS Connection
+        run: |
+          aws sts get-caller-identity --region ap-southeast-1
+
+      # Semua step Terraform pakai region yang sama
       - name: Terraform Init
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ap-southeast-1
         run: terraform init
+        env:
+          AWS_REGION: ap-southeast-1
 
       - name: Terraform Plan
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ap-southeast-1
         run: terraform plan -no-color
+        env:
+          AWS_REGION: ap-southeast-1
 
       - name: Terraform Apply
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ap-southeast-1
         run: terraform apply -auto-approve
+        env:
+          AWS_REGION: ap-southeast-1
