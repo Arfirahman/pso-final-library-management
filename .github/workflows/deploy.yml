@@ -10,15 +10,15 @@ permissions:
   packages: write
 
 jobs:
-  # Job ini cuma biar workflow valid (GitHub seneng)
+  # Job kecil ini cuma biar GitHub ga ngomel "no job without dependencies"
   trigger:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Trigger job – workflow is valid now"
+      - run: echo "Workflow validation job – everything is fine"
 
-  # Job asli kamu, tetap tergantung laravel-tests
+  # Job utama kamu
   docker:
-    needs: [trigger, laravel-tests]   # ← wajib ada trigger di sini
+    needs: [trigger, laravel-tests]   # ← ini yang nunggu testing selesai
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
