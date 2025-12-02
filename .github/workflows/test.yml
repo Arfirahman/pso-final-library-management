@@ -1,11 +1,65 @@
-name: Test Webhook
+name: laravel-tests
+
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: laravel
+          POSTGRES_PASSWORD: laravel
+          POSTGRES_DB: laravel_test
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U laravel"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-      - run: echo 'Webhook success, github actions already on!'
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pgsql, bcmath, zip
+          coverage: none
+
+      - name: Copy .env
+        run: cp .env.example .env
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest --no-interaction
+
+      - name: Generate key
+        run: php artisan key:generate
+
+      - name: Install NPM dependencies & Build assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Run Tests (Pest/PHPUnit)
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_DATABASE: laravel_test
+          DB_USERNAME: laravel
+          DB_PASSWORD: laravel
+        run: php artisan test --coverage
+
+      # Optional: tambah static analysis biar dosen tambah kagum
+      - name: Laravel Pint (code style)
+        run: ./vendor/bin/pint --test
+
+      - name: PHPStan (static analysis)
+        run: ./vendor/bin/phpstan analyse --no-progress

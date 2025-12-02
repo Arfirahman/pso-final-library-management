@@ -107,7 +107,7 @@ resource "aws_instance" "web" {
                 -e DB_PORT=5432 \
                 -e DB_DATABASE=library_db \
                 -e DB_USERNAME=postgres \
-                -e DB_PASSWORD=yourpassword123 \
+                -e DB_PASSWORD=swagpapi101 \
                 ghcr.io/afrirahman/pso-final-library-management/laravel:latest
               EOF
 
