@@ -55,7 +55,7 @@ jobs:
           DB_DATABASE: laravel_test
           DB_USERNAME: laravel
           DB_PASSWORD: laravel
-        run: php artisan test --coverage
+        run: php artisan test 
 
       - name: Laravel Pint (optional)
         run: ./vendor/bin/pint --test || true
