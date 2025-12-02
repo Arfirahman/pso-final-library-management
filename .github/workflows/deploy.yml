@@ -1,7 +1,11 @@
 name: Build & Push Docker Image
 
+# Ini yang bener: nunggu workflow laravel-tests selesai & sukses dulu
 on:
-  push:
+  workflow_run:
+    workflows: ["laravel-tests"]   # ← nama workflow testing kamu
+    types:
+      - completed
     branches:
       - main
 
@@ -10,15 +14,9 @@ permissions:
   packages: write
 
 jobs:
-  # Job kecil ini cuma biar GitHub ga ngomel "no job without dependencies"
-  trigger:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Workflow validation job – everything is fine"
-
-  # Job utama kamu
-  docker:
-    needs: [trigger, laravel-tests]   # ← ini yang nunggu testing selesai
+  build-docker:
+    # KALAU TEST GAGAL → job ini otomatis ga jalan (skipped)
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
