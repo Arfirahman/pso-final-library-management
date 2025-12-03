@@ -9,19 +9,19 @@ resource "tls_private_key" "pk" {
 }
 
 resource "aws_key_pair" "kp" {
-  key_name   = "my-library-key"
+  key_name   = "my-library-key-final"
   public_key = tls_private_key.pk.public_key_openssh
 }
 
 # Save the private key to a file on your computer
 resource "local_file" "ssh_key" {
-  filename = "my-library-key.pem"
+  filename = "my-library-key-final.pem"
   content  = tls_private_key.pk.private_key_pem
 }
 
 # --- 2. Security Groups (Firewalls) ---
 resource "aws_security_group" "web_sg" {
-  name        = "library-web-sg"
+  name        = "library-web--final"
   description = "Allow HTTP and SSH"
 
   ingress {
@@ -47,14 +47,20 @@ resource "aws_security_group" "web_sg" {
 }
 
 resource "aws_security_group" "db_sg" {
-  name        = "library-db-sg"
-  description = "Allow PostgreSQL from Web App only"
+  name        = "library-db-sg-final"
+  description = "Allow PostgreSQL from Anywhere"
 
   ingress {
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
-    security_groups = [aws_security_group.web_sg.id] # Only allow the web server
+    cidr_blocks     = ["0.0.0.0/0"] # Only allow the web server
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -69,7 +75,7 @@ resource "aws_db_instance" "default" {
   password               = "swagpapi101" # CHANGE THIS PASSWORD!
   parameter_group_name   = "default.postgres16"
   skip_final_snapshot    = true
-  publicly_accessible    = false
+  publicly_accessible    = true
   vpc_security_group_ids = [aws_security_group.db_sg.id]
 }
 
